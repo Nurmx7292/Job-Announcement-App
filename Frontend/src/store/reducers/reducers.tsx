@@ -17,7 +17,10 @@ const initialState: JobState = {
 const JobSlice = createSlice({
     name: "job",
     initialState,
-    reducers: {},
+    reducers: {
+        setJobs: (state, action: PayloadAction<{job:IJob}>) => {
+            state.jobs = [...state.jobs!,action.payload.job]
+    }},
     extraReducers:(builder) => {
         builder.addCase(fetchJobsQuery.fulfilled.type,(state, action:PayloadAction<IJob[]>)=>{
             state.loading = false 
@@ -33,3 +36,4 @@ const JobSlice = createSlice({
 })
 
 export default JobSlice.reducer
+export const { setJobs } = JobSlice.actions

@@ -12,6 +12,7 @@ const createJob = async (req, res) => {
             category,
             requirements,
             employerId: req.userInfo.userId,
+            imageUrl: req.file ? req.file.filename : null,
         };
 
         const newlyCreatedJob = await Job.create(newJob);
@@ -20,12 +21,13 @@ const createJob = async (req, res) => {
             success: true,
             message: "Job has been created",
             job: newlyCreatedJob,
+            image: req.file
         });
     } catch (e) {
         console.log(e);
         return res.status(500).json({
             success: false,
-            message: "Some error occured",
+            message: `Some error occured`,
         });
     }
 };
@@ -53,6 +55,32 @@ const getAllJobs = async (req, res) => {
         });
     }
 };
+
+const getUserJobs = async (req, res) => {
+    try {
+        console.log(req.userInfo)
+        const jobs = await Job.find({employerId:req.userInfo.userId});
+        console.log(jobs)
+        if (jobs.length > 0) {
+            return res.status(200).json({
+                success: true,
+                data: jobs,
+            });
+        } else {
+            return res.status(200).json({
+                success: true,
+                data: jobs,
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            success: false,
+            message: "Some error occured",
+        });
+    }
+};
+
 
 const getSingleJob = async (req, res) => {
     try {
@@ -93,12 +121,13 @@ const updateSingleJob = async (req, res) => {
                 message: "Job not found",
             });
         }
-
-        if (req.userInfo.userId !== existingJob.employerId.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not allowed to update this job",
-            });
+        if(req.userInfo.role!="admin"){
+            if (req.userInfo.userId !== existingJob.employerId.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not allowed to update this job",
+                });
+            }
         }
 
         const updatedJob = await Job.findByIdAndUpdate(
@@ -133,12 +162,13 @@ const deleteSingleJob = async (req, res) => {
                 message: "Job not found",
             });
         }
-
-        if (job.employerId.toString() !== req.userInfo.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not authorized to delete this job",
-            });
+        if(req.userInfo.role!="admin"){
+            if (job.employerId.toString() !== req.userInfo.userId) {
+                return res.status(403).json({
+                    success: false,
+                    message: "You are not authorized to delete this job",
+                });
+            }
         }
 
         await Job.findByIdAndDelete(jobId);
@@ -156,4 +186,5 @@ const deleteSingleJob = async (req, res) => {
     }
 };
 
-module.exports = { createJob, getAllJobs, getSingleJob, updateSingleJob, deleteSingleJob };
+module.exports = { createJob, getAllJobs, getUserJobs, getSingleJob, updateSingleJob, deleteSingleJob };
+

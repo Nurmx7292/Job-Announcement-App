@@ -4,13 +4,15 @@ const connectToDB = require("./db/db");
 const authRoute = require("./routes/auth-route");
 const jobRoute = require("./routes/job-route");
 const applicationRoute = require("./routes/application-route");
+const cors = require("cors");
 
 connectToDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+app.use(cors());
 app.use(express.json());
+app.use(express.static("./uploads"));
 
 app.use("/api/user", authRoute);
 app.use("/api/job", jobRoute);
